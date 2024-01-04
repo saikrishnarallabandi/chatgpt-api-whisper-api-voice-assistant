@@ -1,4 +1,4 @@
 # Judith
 
-![Alt Text](images/demo.tencent.png)
+![Alt Text](images/judith-gradio.png)
 
