@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 
 # Audio
-.mp3
-.wav
+*.mp3
+*.wav
