@@ -11,7 +11,6 @@ judith = Judith()
 
 def do_conversation(audio=None, input_data=None):
 
-
     if audio is not None: input_data = None 
 
     if isinstance(input_data, str):

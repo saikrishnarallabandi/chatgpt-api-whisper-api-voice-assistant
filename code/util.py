@@ -6,7 +6,7 @@ import speech_recognition as sr
 from openai import OpenAI
 
 
-class Judith:
+class JudithBase:
     def __init__(self):
         self.client = OpenAI()
         self.prompt_audio = 'You are Judith, a personal AI assistant. Your job is to help the user to the best of your abilities \
