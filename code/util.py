@@ -7,18 +7,13 @@ from openai import OpenAI
 
 
 class JudithBase:
-    def __init__(self):
+    def __init__(self, exp_name=None):
         self.client = OpenAI()
-        self.prompt_audio = 'You are Judith, a personal AI assistant. Your job is to help the user to the best of your abilities \
-            Figure out what your user needs and try to help them as much as you can. \
-            Remember to respond in 20 words or less.'
         self.prompt_text = 'You are Judith, a personal AI assistant. Your job is to help the user to the best of your abilities \
             Figure out what your user needs and try to help them as much as you can. '
         self.messages = [{"role": "system", "content": self.prompt_text}]
-        self.messages_audio = [{"role": "system", "content": self.prompt_audio}]
-        self.init_exp()
-        self.init_logs()
-        
+        self.init_exp(exp_name)
+
     def init_logs(self):
         with open(f'{self.exp_dir}/logfile', 'w') as f:
             f.write(self.prompt_text + '\n')
@@ -27,10 +22,11 @@ class JudithBase:
         with open(f'{self.exp_dir}/logfile', 'a') as f:
             f.write(message + '\n')
                 
-    def init_exp(self):
+    def init_exp(self, name=None):
         self.random_code, self.current_date, self.time = self.generate_random_code()
+        name_str = name if name is not None else 'convo'
         self.exp_name = (
-            f"judith-gradle-{self.current_date}-"
+            f"judith-gradle-{name_str}-{self.current_date}-"
             + self.time.replace(":", "-")
             + '-'
             + self.random_code
@@ -47,7 +43,16 @@ class JudithBase:
         return code, date, time
 
 
-    def get_text_response(self, messages):
+    def get_text_response(self, messages, search_array = None):
+        if search_array is not None:
+            search_results = ' \n '.join(k.description for k in search_array)
+            
+            messages.append(
+            {
+                "role": 'system',
+                'content': f' You can use the following search context: {search_results}',
+            }
+            )
         response = self.client.chat.completions.create(
             model="gpt-3.5-turbo-1106", messages=messages
         )
@@ -57,10 +62,31 @@ class JudithBase:
             f.write(f'Julia: {system_message}' + '\n')
         return system_message, messages
 
-    def get_audio_response(self, messages_audio):
+    
+class Judith(JudithBase):
+    def __init__(self):
+        super().__init__()
+
+        self.prompt_audio = 'You are Judith, a personal AI assistant. Your job is to help the user to the best of your abilities \
+            Figure out what your user needs and try to help them as much as you can. \
+            Remember to respond in 20 words or less.'
+        
+        self.messages_audio = [{"role": "system", "content": self.prompt_audio}]
+
+        
+    def get_audio_response(self, messages_audio, search_array = None):
+        if search_array is not None:
+            search_results = '\n'.join(k.description for k in search_array)
+    
+            messages_audio.append(
+                {
+                "role": 'system',
+                'content': f' You can use the following search context: {search_results}',
+                }
+            )
         response_audio = self.client.chat.completions.create(
-            model="gpt-3.5-turbo-1106", messages=messages_audio
-        )
+            model="gpt-3.5-turbo-1106", messages=messages_audio)
+
         system_message_audio = response_audio.choices[0].message.content
         messages_audio.append({"role": "system", "content": system_message_audio})
         return system_message_audio, messages_audio
